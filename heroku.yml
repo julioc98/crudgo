@@ -3,7 +3,5 @@
 build:
   languages:
     - go
-  config:
-    - NAME: JC
 run:
   web: crudgo

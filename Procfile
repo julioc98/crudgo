@@ -1,1 +1,1 @@
-web: crudgo NAME="JC"
+web: crudgo

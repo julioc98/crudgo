@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"log"
@@ -6,21 +6,30 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/julioc98/crudgo/logs"
 	"github.com/julioc98/crudgo/user"
 )
 
+var name string
+
 func handler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Ola mundo"))
+	w.Write([]byte("Ola, Seja bem vindo ao CRUDGo @" + name + " !!"))
 }
 
-func main() {
+// Listen init a http server
+func Listen() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
+	name = os.Getenv("NAME")
+	if name == "" {
+		log.Fatal("$NAME must be set")
+	}
 	r := mux.NewRouter()
+	r.Use(logs.LoggingMiddleware)
 
-	user.GetRoutes(r.PathPrefix("/users").Subrouter())
+	user.SetRoutes(r.PathPrefix("/users").Subrouter())
 
 	r.HandleFunc("/", handler)
 	http.Handle("/", r)

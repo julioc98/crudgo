@@ -7,10 +7,12 @@ import (
 	"github.com/julioc98/crudgo/util"
 )
 
+// GetAll Users
 func GetAll(w http.ResponseWriter, r *http.Request) {
 	util.RespondWithJSON(w, http.StatusOK, Users)
 }
 
+// Add a User
 func Add(w http.ResponseWriter, r *http.Request) {
 	var user User
 	var msg util.Message
@@ -31,7 +33,7 @@ func Add(w http.ResponseWriter, r *http.Request) {
 	msg = util.Message{
 		Content: "Novo Usuario adcionado com sucesso",
 		Status:  "OK",
-		Body:    nil,
+		Body:    user,
 	}
 	util.RespondWithJSON(w, http.StatusCreated, msg)
 }

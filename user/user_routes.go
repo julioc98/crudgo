@@ -4,7 +4,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func GetRoutes(r *mux.Router) {
+// SetRoutes add routes from user
+func SetRoutes(r *mux.Router) {
 	r.HandleFunc("", Add).Methods("POST")
 	r.HandleFunc("", GetAll).Methods("GET")
 }

@@ -8,4 +8,5 @@ import (
 func SetRoutes(r *mux.Router) {
 	r.HandleFunc("", Add).Methods("POST")
 	r.HandleFunc("", GetAll).Methods("GET")
+	r.HandleFunc("/{name}", FindByName).Methods("GET")
 }

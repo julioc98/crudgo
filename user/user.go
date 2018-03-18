@@ -3,7 +3,7 @@ package user
 // User is a Human
 type User struct {
 	Name string `json:"name"`
-	Age  int    `age:"page"`
+	Age  int    `json:"age"`
 }
 
 // Users is a slice for User

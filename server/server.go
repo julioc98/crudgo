@@ -24,7 +24,7 @@ func Listen() {
 	}
 	name = os.Getenv("NAME")
 	if name == "" {
-		log.Fatal("$NAME must be set")
+		log.Println("$NAME must be set")
 	}
 	r := mux.NewRouter()
 	r.Use(logs.LoggingMiddleware)

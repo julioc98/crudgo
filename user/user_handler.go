@@ -6,24 +6,31 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/julioc98/crudgo/db"
 	"github.com/julioc98/crudgo/util"
 )
 
 // GetAll Users
 func GetAll(w http.ResponseWriter, r *http.Request) {
-	util.RespondWithJSON(w, http.StatusOK, Users)
+	db := db.Conn()
+	defer db.Close()
+	var users []User
+	db.Find(&users)
+	util.RespondWithJSON(w, http.StatusOK, users)
 }
 
 // FindByName find a User by name
 func FindByName(w http.ResponseWriter, r *http.Request) {
+	db := db.Conn()
+	defer db.Close()
+
+	var users []User
 	vars := mux.Vars(r)
 	name := vars["name"]
-	for _, user := range Users {
-		if name == user.Name {
-			util.RespondWithJSON(w, http.StatusOK, user)
-			return
-		}
-
+	db.Find(&users, "name = ?", name)
+	if len(users) >= 0 {
+		util.RespondWithJSON(w, http.StatusOK, users)
+		return
 	}
 
 	msg := util.Message{
@@ -37,6 +44,10 @@ func FindByName(w http.ResponseWriter, r *http.Request) {
 
 // FindByID find a User by ID
 func FindByID(w http.ResponseWriter, r *http.Request) {
+	db := db.Conn()
+	defer db.Close()
+
+	var user User
 
 	var msg util.Message
 
@@ -52,13 +63,10 @@ func FindByID(w http.ResponseWriter, r *http.Request) {
 		util.RespondWithJSON(w, http.StatusOK, msg)
 		return
 	}
-
-	for _, user := range Users {
-		if id == user.ID {
-			util.RespondWithJSON(w, http.StatusOK, user)
-			return
-		}
-
+	db.Find(&user, id)
+	if user.ID != 0 {
+		util.RespondWithJSON(w, http.StatusOK, user)
+		return
 	}
 
 	msg = util.Message{
@@ -72,6 +80,9 @@ func FindByID(w http.ResponseWriter, r *http.Request) {
 
 // Add a User
 func Add(w http.ResponseWriter, r *http.Request) {
+	db := db.Conn()
+	defer db.Close()
+
 	var user User
 	var msg util.Message
 
@@ -86,11 +97,7 @@ func Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	IDBase = IDBase + 1
-
-	user.ID = IDBase
-
-	Users = append(Users, user)
+	db.Create(&user)
 
 	msg = util.Message{
 		Content: "New user successfully added",
@@ -103,7 +110,10 @@ func Add(w http.ResponseWriter, r *http.Request) {
 
 // DeleteByID find a User by ID
 func DeleteByID(w http.ResponseWriter, r *http.Request) {
+	db := db.Conn()
+	defer db.Close()
 
+	var user User
 	var msg util.Message
 
 	msg = util.Message{
@@ -118,22 +128,18 @@ func DeleteByID(w http.ResponseWriter, r *http.Request) {
 		util.RespondWithJSON(w, http.StatusOK, msg)
 		return
 	}
-	msg = util.Message{
-		Content: "Deleted user successfully",
-		Status:  "OK",
-		Body:    nil,
-	}
 
-	for i, user := range Users {
-		if id == user.ID {
-
-			Users[i] = Users[len(Users)-1]
-			Users = Users[:len(Users)-1]
-
-			util.RespondWithJSON(w, http.StatusAccepted, msg)
-			return
+	db.Find(&user, id)
+	if user.ID != 0 {
+		db.Delete(&user)
+		msg = util.Message{
+			Content: "Deleted user successfully",
+			Status:  "OK",
+			Body:    user,
 		}
 
+		util.RespondWithJSON(w, http.StatusAccepted, msg)
+		return
 	}
 
 	msg = util.Message{
@@ -147,7 +153,10 @@ func DeleteByID(w http.ResponseWriter, r *http.Request) {
 
 // UpdateByID find a User by ID
 func UpdateByID(w http.ResponseWriter, r *http.Request) {
-	var myUser User
+	db := db.Conn()
+	defer db.Close()
+
+	var user User
 	var msg util.Message
 
 	msg = util.Message{
@@ -169,20 +178,22 @@ func UpdateByID(w http.ResponseWriter, r *http.Request) {
 		Body:    nil,
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&myUser); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, msg)
 		return
 	}
 
-	for i := 0; i < len(Users); i++ {
-		if id == Users[i].ID {
+	if id >= 0 {
+		user.ID = uint(id)
+		db.Save(&user)
 
-			Users[i].Name = myUser.Name
-			Users[i].Age = myUser.Age
-
-			util.RespondWithJSON(w, http.StatusAccepted, Users[i])
-			return
+		msg = util.Message{
+			Content: "Update user successfully ",
+			Status:  "OK",
+			Body:    user,
 		}
+		util.RespondWithJSON(w, http.StatusAccepted, msg)
+		return
 	}
 
 	msg = util.Message{

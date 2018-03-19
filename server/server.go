@@ -3,11 +3,11 @@ package server
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/julioc98/crudgo/logs"
 	"github.com/julioc98/crudgo/user"
+	"github.com/julioc98/crudgo/util"
 )
 
 var name string
@@ -18,14 +18,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 // Listen init a http server
 func Listen() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Fatal("$PORT must be set")
-	}
-	name = os.Getenv("NAME")
-	if name == "" {
-		log.Println("$NAME must be set")
-	}
+	port := util.GetOSEnvironment("PORT", "5001")
+
+	name = util.GetOSEnvironment("NAME", "JC")
+
 	r := mux.NewRouter()
 	r.Use(logs.LoggingMiddleware)
 
@@ -34,6 +30,7 @@ func Listen() {
 	r.HandleFunc("/", handler)
 	http.Handle("/", r)
 
+	log.Println("Listen on port: " + port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}

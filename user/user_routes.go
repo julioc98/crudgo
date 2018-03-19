@@ -12,5 +12,4 @@ func SetRoutes(r *mux.Router) {
 	r.HandleFunc("/{id}", FindByID).Methods("GET")
 	r.HandleFunc("/{id}", DeleteByID).Methods("DELETE")
 	r.HandleFunc("/{id}", UpdateByID).Methods("PUT")
-
 }
